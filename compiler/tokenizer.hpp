@@ -1,5 +1,6 @@
 #pragma once
 #include "helpers.hpp"
+#include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -9,9 +10,8 @@ namespace pl0 {
 using namespace std;
 
 struct Node {
-	std::string val;
+	std::string val, type;
 	int line;
-	std::string type;
 };
 vector<Node> toklist;
 
@@ -37,13 +37,13 @@ static void get_number() {
 		s += ss.get();
 		s += get_number_posint();
 	}
-	toklist.push_back({ s, line_no, "number" });
+	toklist.push_back({ s, "number", line_no });
 }
 static void get_identifier() {
 	string s;
 	if (!is_alpha(ss.peek()))  throw "expected alpha character in get_ident";
 	while (is_alphanumeric(ss.peek()))  s += ss.get();
-	toklist.push_back({ s, line_no, "identifier" });
+	toklist.push_back({ s, "identifier", line_no });
 }
 static void get_operator() {
 	string s;
@@ -55,9 +55,14 @@ static void get_operator() {
 	else if (c=='>' && ss.peek()=='=')  s += ss.get();
 	else if (c=='<' && ss.peek()=='=')  s += ss.get();
 	else if (c=='!' && ss.peek()=='=')  s += ss.get();
-	toklist.push_back({ s, line_no, "operator" });
+	toklist.push_back({ s, "operator", line_no });
 }
 
+void tokshow() {
+	printf("token count: %d\n", pl0::toklist.size());
+	for (const auto& t : pl0::toklist)
+		printf("	%03d [%s] %s\n", t.line, t.val.c_str(), t.type.c_str());
+}
 
 int load(const std::string fname) {
 	// open file
@@ -83,15 +88,23 @@ int load(const std::string fname) {
 			}
 		}
 	}
-	catch (string s) {
+	catch (const string& err) {
 		fprintf(stderr, 
-			"token parse error:\n"
+			"tokenizer error:\n"
 			"	%s\n"
 			"	line: %d\n", 
-			s.c_str(), line_no );
+			err.c_str(), line_no );
 		return 1;
 	}
-
+	// identify keywords
+	static const vector<string> KEYW = { 
+		"const","var","procedure","call","begin","end","if","then","while","do","odd","read","write" };
+	for (auto& tok : toklist) {
+		if (tok.type != "identifier")  continue;
+		for (const auto& k : KEYW)
+			if (tok.val == k) { tok.type = "keyword";  break; }
+	}
+	// OK
 	printf("load OK\n");
 	return 0;
 }

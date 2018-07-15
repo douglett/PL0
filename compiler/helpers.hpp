@@ -16,7 +16,7 @@ inline int is_innumber(char c) {
 	return (is_numeric(c) || c=='+' || c=='-' || c=='.');
 }
 inline int is_operator(char c) {
-	static const std::string OP = "=><!*/+-,;:.";
+	static const std::string OP = "=><!*/+-,;:.()";
 	for (char o : OP)
 		if (o == c)  return 1;
 	return 0;
