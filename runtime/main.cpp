@@ -8,5 +8,5 @@ int main() {
 	pl0::load("examples/test.txt");
 	// pl0::tokshow();
 	pl0::parse();
-	pl0::run();
+	// pl0::run();
 }
