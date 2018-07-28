@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 namespace pl0 {
 
@@ -20,6 +21,13 @@ inline int is_operator(char c) {
 	for (char o : OP)
 		if (o == c)  return 1;
 	return 0;
+}
+
+inline std::string join(const std::vector<std::string>& vs) {
+	std::string s;
+	for (int i = 0; i < (int)vs.size(); i++)
+		s += (i > 0 ? " " : "") + vs[i];
+	return s;
 }
 
 }
