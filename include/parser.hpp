@@ -165,9 +165,10 @@ static void parse_block() {
 }
 
 static void parse_program() {
-	// emit({ "JMP",  })
 	parse_block();
 	require("operator", ".");
+	prog.pop_back();  // delete final block return (program ends)
+	// prog.back() = { "DIE", "end." };  // replace last end with die
 }
 
 //-- main parse call

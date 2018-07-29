@@ -23,7 +23,7 @@ static const symbol find_symbol(const string& id) {
 static const int find_symbol_level(const string& id) {
 	for (int i = table.size()-1; i >= 0; i--)
 		for (int j = table[i].size()-1; j >= 0; j--)
-			if (table[i][j].name == id)  return table.size() - i;
+			if (table[i][j].name == id)  return table.size()-1 - i;
 	throw string("missing symbol: ["+id+"]");
 }
 
