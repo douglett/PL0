@@ -3,10 +3,10 @@
 using namespace std;
 
 int main() {
-	cout << "here" << endl;
+	cout << "begin" << endl;
 
-	pl0::load("examples/test.txt");
+	if (pl0::load("../examples/test.txt"))  return 1;
 	// pl0::tokshow();
-	pl0::parse();
-	// pl0::run();
+	if (pl0::parse())  return 1;
+	pl0::progshow();
 }

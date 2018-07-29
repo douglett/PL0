@@ -1,13 +1,11 @@
 #pragma once
 #include "tokenizer.hpp"
+#include "emitter.hpp"
 
 namespace pl0 {
 using namespace std;
 
 static int pos = 0;
-static int block_level = 0;
-static vector<vector<pair<string, int>>> table = {};
-vector<vector<string>> prog;
 
 //-- next token functions
 static const Node EOF_NODE = { "EOF", "EOF", -1 };
@@ -32,31 +30,21 @@ static int require(const string& type, const string& val) {
 	return 1;
 }
 
-//-- emitor
-static void emit(const vector<string>& args) {
-	string s;
-	for (auto& a : args)
-		s += a + " ";
-	// prog.push_back(s);
-	prog.push_back(args);
-	printf("%s\n", s.c_str());
-}
-
 //-- parser functions
 static void parse_expression();
 
-static int find_level(const string& id) {
-	for (int i = table.size()-1; i >= 0; i--)
-		for (int j = table[i].size()-1; j >= 0; j--)
-			if (table[i][j].first == id)  return block_level - table[i][j].second;
-	throw string("find_level: var not defined: "+id);
-}
-static string find_level_str(const string& id) {
-	return to_string(find_level(id));
-}
+// static int find_level(const string& id) {
+// 	for (int i = table.size()-1; i >= 0; i--)
+// 		for (int j = table[i].size()-1; j >= 0; j--)
+// 			if (table[i][j].first == id)  return block_level - table[i][j].second;
+// 	throw string("find_level: var not defined: "+id);
+// }
+// static string find_level_str(const string& id) {
+// 	return to_string(find_level(id));
+// }
 
 static void parse_factor() {
-	if      (expect("identifier", "")) { emit({ "LOD", find_level_str(lasttok().val), lasttok().val }); }
+	if      (expect("identifier", "")) { emit({ "LOD", lasttok().val }); }
 	else if (expect("number", "")) { emit({ "LIT", lasttok().val }); }
 	else if (expect("operator", "(")) { parse_expression();  require("operator", ")"); }
 	else 	{ throw string("unexpected token in factor"); }
@@ -97,7 +85,7 @@ static void parse_statement() {
 		auto& id = lasttok();
 		require("operator", ":=");
 		parse_expression();
-		emit({ "STO", find_level_str(id.val), id.val });
+		emit({ "STO", id.val });
 	}
 	// call
 	if (expect("keyword", "call")) {
@@ -119,15 +107,13 @@ static void parse_statement() {
 		auto& cmd = lasttok().val;
 		require("identifier", "");
 		auto& id = lasttok();
-		emit({ "EXT", cmd, find_level_str(id.val), id.val });
+		emit({ "EXT", cmd, id.val });
 	}
 	// null - actually ok
 }
 
 static void parse_block() {
-	block_level++;
-	table.push_back({});
-	printf("block: [%d]\n", block_level);
+	emit({ "_block" });
 	// const block
 	if (expect("keyword", "const")) {
 		// printf("parsing const block...\n");
@@ -137,8 +123,7 @@ static void parse_block() {
 			require("operator", "=");
 			require("number", "");
 			auto& num = lasttok();
-			emit({ "CON", id.val, num.val });
-			table.back().push_back({ id.val, block_level });
+			emit({ "_const", id.val, num.val });
 			if (!expect("operator", ","))  break;
 		}
 		require("operator", ";");
@@ -146,33 +131,34 @@ static void parse_block() {
 	// var block
 	if (expect("keyword", "var")) {
 		// printf("parsing var block...\n");
+		vector<string> varlist = { "_varlist" };
 		while (true) {
 			require("identifier", "");
-			auto& id = lasttok();
-			emit({ "VAR", id.val });
-			table.back().push_back({ id.val, block_level });
+			// auto& id = lasttok();
+			// emit({ "VAR", id.val });
+			varlist.push_back(lasttok().val);
 			if (!expect("operator", ","))  break;
 		}
 		require("operator", ";");
+		emit(varlist);
 	}
 	// procedure block list
 	while (expect("keyword", "procedure")) {
 		// printf("parsing procedure block...\n");
 		require("identifier", "");
 		auto& id = lasttok();
-		emit({ "proc", id.val });
+		emit({ "_procedure", id.val });
 		require("operator", ";");
 		parse_block();
 		require("operator", ";");
 	}
 	// statement
 	parse_statement();
-	block_level--;
-	table.pop_back();
-	printf("end\n");
+	emit({ "_end" });
 }
 
 static void parse_program() {
+	// emit({ "JMP",  })
 	parse_block();
 	require("operator", ".");
 }
