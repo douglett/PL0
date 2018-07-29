@@ -124,6 +124,10 @@ static void parse_statement() {
 		parse_statement();
 		// fix jump command
 		prog[jmppos].b = prog.size();
+		// optional else
+		if (expect("keyword", "else")) {
+			throw string("else WIP!");
+		}
 	}
 	// while
 	// read / write

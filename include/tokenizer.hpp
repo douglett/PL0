@@ -11,7 +11,7 @@ using namespace std;
 
 // consts
 static const vector<string> KEYWORDS = { 
-	"const","var","procedure","call","begin","end","if","then","while","do","odd","read","write" };
+	"const","var","procedure","call","begin","end","if","then","else","while","do","odd","read","write" };
 	
 // token storage
 struct Node {
