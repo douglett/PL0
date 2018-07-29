@@ -108,9 +108,9 @@ static void parse_statement() {
 	else if (expect("keyword", "begin")) {
 		while (true) {
 			parse_statement();
-			require("operator", ";");
-			if (expect("keyword", "end"))  break;
-			if (expect("EOF"))  throw string("unterminated block");
+			if      (expect("operator", ";"))  continue;
+			else if (expect("keyword", "end"))  break;
+			else    throw string("expected ; or end in block");
 		}
 	}
 	// if
