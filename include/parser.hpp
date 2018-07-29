@@ -107,7 +107,9 @@ static void parse_statement() {
 		auto& cmd = lasttok().val;
 		require("identifier", "");
 		auto& id = lasttok();
-		emit({ "EXT", cmd, id.val });
+		if (cmd == "write")  emit({ "LOD", id.val });
+		emit({ "EXT", cmd });
+		if (cmd == "read" )  emit({ "STO", id.val });
 	}
 	// null - actually ok
 }
@@ -142,6 +144,9 @@ static void parse_block() {
 		require("operator", ";");
 		emit(varlist);
 	}
+	// insert jump to main block
+	int jmppos = prog.size();
+	emit({ "JMP", "-1" });
 	// procedure block list
 	while (expect("keyword", "procedure")) {
 		// printf("parsing procedure block...\n");
@@ -152,6 +157,8 @@ static void parse_block() {
 		parse_block();
 		require("operator", ";");
 	}
+	// fix jump command
+	prog[jmppos].b = prog.size();
 	// statement
 	parse_statement();
 	emit({ "_end" });
