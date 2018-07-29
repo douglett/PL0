@@ -33,16 +33,6 @@ static int require(const string& type, const string& val) {
 //-- parser functions
 static void parse_expression();
 
-// static int find_level(const string& id) {
-// 	for (int i = table.size()-1; i >= 0; i--)
-// 		for (int j = table[i].size()-1; j >= 0; j--)
-// 			if (table[i][j].first == id)  return block_level - table[i][j].second;
-// 	throw string("find_level: var not defined: "+id);
-// }
-// static string find_level_str(const string& id) {
-// 	return to_string(find_level(id));
-// }
-
 static void parse_factor() {
 	if      (expect("identifier", "")) { emit({ "LOD", lasttok().val }); }
 	else if (expect("number", "")) { emit({ "LIT", lasttok().val }); }
@@ -78,6 +68,27 @@ static void parse_expression() {
 	}
 }
 
+static void parse_condition() {
+	if (expect("keyword", "odd")) {
+		parse_expression();
+		emit({ "OPR", "odd" });
+		return;
+	}
+	// LHS
+	parse_expression();
+	// conditional
+	static const vector<string> OPER = { "=","!=","<",">","<=",">=" };
+	int found = 0;
+	for (auto& o : OPER)
+		if (expect("operator", o)){  found = 1; break;  }
+	if (!found)  throw string("condition: expected comparison operator");
+	auto& op = lasttok();
+	// RHS
+	parse_expression();
+	// calculate conditional
+	emit({ "OPR", op.val });
+}
+
 static void parse_statement() {
 	// printf("parsing statement...\n");
 	// assign
@@ -101,6 +112,17 @@ static void parse_statement() {
 		require("keyword", "end");
 	}
 	// if
+	if (expect("keyword", "if")) {
+		parse_condition();
+		// insert jump command
+		int jmppos = prog.size();
+		emit({ "JPC", "-1" });
+		// if body
+		require("keyword", "then");
+		parse_statement();
+		// fix jump command
+		prog[jmppos].b = prog.size();
+	}
 	// while
 	// read / write
 	if (expect("keyword", "read") || expect("keyword", "write")) {
@@ -136,8 +158,6 @@ static void parse_block() {
 		vector<string> varlist = { "_varlist" };
 		while (true) {
 			require("identifier", "");
-			// auto& id = lasttok();
-			// emit({ "VAR", id.val });
 			varlist.push_back(lasttok().val);
 			if (!expect("operator", ","))  break;
 		}
@@ -168,7 +188,6 @@ static void parse_program() {
 	parse_block();
 	require("operator", ".");
 	prog.pop_back();  // delete final block return (program ends)
-	// prog.back() = { "DIE", "end." };  // replace last end with die
 }
 
 //-- main parse call
@@ -179,12 +198,11 @@ int parse() {
 		printf("parse OK\n");
 	}
 	catch (const string& err) {
-		// int line = ( pos >= (int)toklist.size() ? -1 : toklist[pos].line );
 		fprintf(stderr, 
 			"parser error:\n"
 			"	%s\n"
 			"	line: %d\n"
-			"	at: [%s] [%s]", 
+			"	at: [%s] [%s]\n", 
 			err.c_str(), nexttok().line, nexttok().type.c_str(), nexttok().val.c_str() );
 		return 1;
 	}

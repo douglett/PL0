@@ -9,12 +9,16 @@
 namespace pl0 {
 using namespace std;
 
+// consts
+static const vector<string> KEYWORDS = { 
+	"const","var","procedure","call","begin","end","if","then","while","do","odd","read","write" };
+	
+// token storage
 struct Node {
 	std::string val, type;
 	int line;
 };
 vector<Node> toklist;
-
 // parse globals
 static stringstream ss;
 static int line_no = 0;
@@ -97,11 +101,9 @@ int load(const std::string fname) {
 		return 1;
 	}
 	// identify keywords
-	static const vector<string> KEYW = { 
-		"const","var","procedure","call","begin","end","if","then","while","do","odd","read","write" };
 	for (auto& tok : toklist) {
 		if (tok.type != "identifier")  continue;
-		for (const auto& k : KEYW)
+		for (const auto& k : KEYWORDS)
 			if (tok.val == k) { tok.type = "keyword";  break; }
 	}
 	// OK

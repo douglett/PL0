@@ -42,6 +42,7 @@ int run() {
 		const auto& op = prog[PC];
 		if       (op.type == "INT"){  stack.resize( stack.size() + op.b, 0 ), PC++;  }
 		else if  (op.type == "JMP"){  PC = op.b;  }
+		// else if  (op.type == "JPC"){  if(stack.back() == 0) PC = op.b;  }
 		else if  (op.type == "LIT"){  stack.push_back(op.b), PC++;  }
 		else if  (op.type == "STO"){  stack[framepos(op.a) + op.b] = stack.back(); stack.pop_back(), PC++;  }
 		else if  (op.type == "LOD"){  stack.push_back( stack[framepos(op.a) + op.b] ), PC++;  }
@@ -50,10 +51,16 @@ int run() {
 		else if  (op.type == "OPR"){  
 			int i = stack.back(); stack.pop_back();  // pop item into register
 			switch (op.b) {
-				case 1:   stack.back() += i; break;
-				case 2:   stack.back() -= i; break;
-				case 3:   stack.back() *= i; break;
-				case 4:   stack.back() /= i; break;
+				case 1:    stack.back() += i; break;
+				case 2:    stack.back() -= i; break;
+				case 3:    stack.back() *= i; break;
+				case 4:    stack.back() /= i; break;
+				case 5:    stack.back() = (stack.back() == i); break;
+				case 6:    stack.back() = (stack.back() != i); break;
+				case 7:    stack.back() = (stack.back() <  i); break;
+				case 8:    stack.back() = (stack.back() >  i); break;
+				case 9:    stack.back() = (stack.back() <= i); break;
+				case 10:   stack.back() = (stack.back() >= i); break;
 				default:  throw string("unknown OPR opcode: ["+to_string(op.b)+"]");
 			}
 			PC++;  }
@@ -66,8 +73,10 @@ int run() {
 	}
 	}
 	catch (const string& err) {
-		fprintf(stderr, "runtime error: %s\n", err.c_str());
-		fprintf(stderr, "	line %d\n", PC);
+		fprintf(stderr, 
+			"runtime error: %s\n"
+			"	line %d\n",
+			err.c_str(), PC );
 		return 1;
 	}
 	// OK

@@ -4,6 +4,10 @@
 namespace pl0 {
 using namespace std;
 
+// consts
+static const vector<string> OPR_LIST = {
+	"NIL",  "+","-","*","/",  "=","!=","<",">","<=",">=" };
+
 // symbol table storage
 struct symbol {
 	string type, name;
@@ -26,9 +30,6 @@ static const int find_symbol_level(const string& id) {
 			if (table[i][j].name == id)  return table.size()-1 - i;
 	throw string("missing symbol: ["+id+"]");
 }
-
-static const vector<string> OPR_LIST = {
-	"NIL", "+", "-", "*", "/" };
 
 //-- emitter
 void emit(const vector<string>& args) {
@@ -58,20 +59,20 @@ void emit(const vector<string>& args) {
 		auto& sym = find_symbol(args[1]);
 		if (sym.type != "procedure")  throw string("emit: expected procedure");
 		prog.push_back({ "CAL", args[1]+"()", find_symbol_level(args[1]), sym.a });  }
-	else if (args[0] == "JMP")  
-		prog.push_back({ "JMP", "", 0, stoi(args[1]) });
+	else if (args[0] == "JMP" || args[0] == "JPC")
+		prog.push_back({ args[0], "", 0, stoi(args[1]) });
 	else if (args[0] == "OPR"){ 
 		int opcode = -1;
 		for (int i = 0; i < (int)OPR_LIST.size(); i++)
 			if (OPR_LIST[i] == args[1]){  opcode = i; break;  }
-		if (opcode == -1)  throw string("unknown OPR: ["+args[1]+"]");
+		if (opcode == -1)  throw string("emit: unknown OPR: ["+args[1]+"]");
 		prog.push_back({ "OPR", args[1], 0, opcode });  }
 	else if (args[0] == "EXT"){ 
 		int cmd = 0;
 		if      (args[1] == "write")  cmd = 1;
 		else if (args[1] == "read" )  cmd = 2;
 		prog.push_back({ "EXT", args[1], 0, cmd });  }
-	else    throw string("emitter: unknown command ["+args[0]+"]");
+	else    throw string("emit: unknown command ["+args[0]+"]");
 }
 
 void progshow() {
