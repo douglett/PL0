@@ -39,4 +39,22 @@ using namespace std;
 // 	return 0;
 // }
 
+static vector<int> stack = { 0, 0, 0 };  // initial state
+static int PC = 0;
+static int return_address = 0, dynamic_link = 0, static_link = 0;
+
+int run() {
+	while (PC < (int)prog.size()) {
+		const auto& op = prog[PC];
+		if       (op.type == "INT"){  stack.resize( stack.size() + op.b, 0 ), PC++;  }
+		else if  (op.type == "JMP"){  PC = op.b;  }
+		else if  (op.type == "LIT"){  stack.push_back(op.b), PC++;  }
+		// else if  (op.type == "STO"){  }
+		else     return fprintf(stderr, "error: unknown opcode: [%s]\n", op.type.c_str()), 1;
+	}
+
+	printf("run OK\n");
+	return 0;
+}
+
 }

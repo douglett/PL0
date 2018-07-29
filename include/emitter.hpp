@@ -29,7 +29,7 @@ static const int find_symbol_level(const string& id) {
 
 //-- emitter
 void emit(const vector<string>& args) {
-	printf("%s\n", join(args).c_str());
+	// printf("%s\n", join(args).c_str());
 
 	if      (args[0] == "_block")  table.push_back({});
 	else if (args[0] == "_end") {
