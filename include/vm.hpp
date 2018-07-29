@@ -28,10 +28,10 @@ static void framepop() {
 	stack.resize(obase);
 }
 static void showstate() {
-	printf(":%-4d  ", PC);
+	string s;
 	for (int i=0; i<(int)stack.size(); i++)
-		printf("%s%d", (i>0 ? "," : ""), stack[i]);
-	printf("   \n");
+		s += (i>0 ? "," : "") + to_string(stack[i]);
+	printf(":%-4d  %s  \n", PC, s.c_str());
 	// string s;  getline(cin, s);
 }
 
@@ -47,9 +47,19 @@ int run() {
 		else if  (op.type == "LOD"){  stack.push_back( stack[framepos(op.a) + op.b] ), PC++;  }
 		else if  (op.type == "CAL"){  framepush(), PC = op.b;  }
 		else if  (op.type == "RET"){  framepop() , PC++;  }
+		else if  (op.type == "OPR"){  
+			int i = stack.back(); stack.pop_back();  // pop item into register
+			switch (op.b) {
+				case 1:   stack.back() += i; break;
+				case 2:   stack.back() -= i; break;
+				case 3:   stack.back() *= i; break;
+				case 4:   stack.back() /= i; break;
+				default:  throw string("unknown OPR opcode: ["+to_string(op.b)+"]");
+			}
+			PC++;  }
 		else if  (op.type == "EXT"){  
-			if      (op.b == 1)  printf("> %d\n", stack.back()), stack.pop_back();
-			else if (op.b == 2)  throw string("err!");
+			if      (op.b == 1){  printf("> %d\n", stack.back()), stack.pop_back();  }
+			else if (op.b == 2){  int i; cout << ">> "; cin >> i; stack.push_back(i);  }
 			else    throw string("unknown EXT id: "+to_string(op.b));
 			PC++;  }
 		else     throw string("unknown opcode: ["+op.type+"]");

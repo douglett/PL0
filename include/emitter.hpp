@@ -27,36 +27,50 @@ static const int find_symbol_level(const string& id) {
 	throw string("missing symbol: ["+id+"]");
 }
 
+static const vector<string> OPR_LIST = {
+	"NIL", "+", "-", "*", "/" };
+
 //-- emitter
 void emit(const vector<string>& args) {
 	// printf("%s\n", join(args).c_str());
 
-	if      (args[0] == "_block")  table.push_back({});
-	else if (args[0] == "_end") {
+	if      (args[0] == "_block")  
+		table.push_back({});
+	else if (args[0] == "_end"){
 		table.pop_back();
-		prog.push_back({ "RET", "end" }); }
-	else if (args[0] == "_const")  table.back().push_back({ "const", args[1], stoi(args[2]) });
-	else if (args[0] == "_varlist") {
+		prog.push_back({ "RET", "end" });  }
+	else if (args[0] == "_const")  
+		table.back().push_back({ "const", args[1], stoi(args[2]) });
+	else if (args[0] == "_varlist"){
 		for (int i=1; i<(int)args.size(); i++) 
 			table.back().push_back({ "var", args[i], 2+i });
 		auto label = join( vector<string>(args.begin()+1, args.end()) );
-		prog.push_back({ "INT", label, 0, (int)args.size()-1 }); }
-	else if (args[0] == "_procedure")  table.back().push_back({ "procedure", args[1], (int)prog.size() });
-	else if (args[0] == "LIT")  prog.push_back({ "LIT", args[1], 0, stoi(args[1]) });
-	else if (args[0] == "STO" || args[0] == "LOD") { 
+		prog.push_back({ "INT", label, 0, (int)args.size()-1 });  }
+	else if (args[0] == "_procedure")  
+		table.back().push_back({ "procedure", args[1], (int)prog.size() });
+	else if (args[0] == "LIT")  
+		prog.push_back({ "LIT", args[1], 0, stoi(args[1]) });
+	else if (args[0] == "STO" || args[0] == "LOD"){ 
 		auto& sym = find_symbol(args[1]);
 		if (sym.type != "var")  throw string("emit: expected var");
-		prog.push_back({ args[0], sym.name, find_symbol_level(args[1]), sym.a }); }
-	else if (args[0] == "CAL") { 
+		prog.push_back({ args[0], sym.name, find_symbol_level(args[1]), sym.a });  }
+	else if (args[0] == "CAL"){ 
 		auto& sym = find_symbol(args[1]);
 		if (sym.type != "procedure")  throw string("emit: expected procedure");
-		prog.push_back({ "CAL", args[1]+"()", find_symbol_level(args[1]), sym.a }); }
-	else if (args[0] == "JMP")  prog.push_back({ "JMP", "", 0, stoi(args[1]) });
-	else if (args[0] == "EXT") { 
+		prog.push_back({ "CAL", args[1]+"()", find_symbol_level(args[1]), sym.a });  }
+	else if (args[0] == "JMP")  
+		prog.push_back({ "JMP", "", 0, stoi(args[1]) });
+	else if (args[0] == "OPR"){ 
+		int opcode = -1;
+		for (int i = 0; i < (int)OPR_LIST.size(); i++)
+			if (OPR_LIST[i] == args[1]){  opcode = i; break;  }
+		if (opcode == -1)  throw string("unknown OPR: ["+args[1]+"]");
+		prog.push_back({ "OPR", args[1], 0, opcode });  }
+	else if (args[0] == "EXT"){ 
 		int cmd = 0;
 		if      (args[1] == "write")  cmd = 1;
 		else if (args[1] == "read" )  cmd = 2;
-		prog.push_back({ "EXT", args[1], 0, cmd }); }
+		prog.push_back({ "EXT", args[1], 0, cmd });  }
 	else    throw string("emitter: unknown command ["+args[0]+"]");
 }
 
