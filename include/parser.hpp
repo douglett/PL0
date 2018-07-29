@@ -17,14 +17,14 @@ static const Node& lasttok() {
 	if (pos <= 0)  return EOF_NODE;
 	return toklist[pos-1];
 }
-static int expect(const string& type, const string& val) {
+static int expect(const string& type, const string& val = "") {
 	if (nexttok().type == "EOF")  return 0;
 	if (nexttok().type != type)  return 0;
 	if (val.size() && nexttok().val != val)  return 0;  // val can be blank (ignore)
 	pos++;
 	return 1;
 }
-static int require(const string& type, const string& val) {
+static int require(const string& type, const string& val = "") {
 	if (nexttok().type == "EOF")  throw string("unexpected EOL");
 	if (!expect(type, val))  throw string("unexpected token. expected ["+type+"] ["+val+"]");
 	return 1;
@@ -99,20 +99,22 @@ static void parse_statement() {
 		emit({ "STO", id.val });
 	}
 	// call
-	if (expect("keyword", "call")) {
+	else if (expect("keyword", "call")) {
 		require("identifier", "");
 		auto& id = lasttok();
 		emit({ "CAL", id.val });
 	}
 	// begin / end block
-	if (expect("keyword", "begin")) {
-		parse_statement();
-		while (expect("operator", ";"))
+	else if (expect("keyword", "begin")) {
+		while (true) {
 			parse_statement();
-		require("keyword", "end");
+			require("operator", ";");
+			if (expect("keyword", "end"))  break;
+			if (expect("EOF"))  throw string("unterminated block");
+		}
 	}
 	// if
-	if (expect("keyword", "if")) {
+	else if (expect("keyword", "if")) {
 		parse_condition();
 		// insert jump command
 		int jmppos = prog.size();
@@ -125,7 +127,7 @@ static void parse_statement() {
 	}
 	// while
 	// read / write
-	if (expect("keyword", "read") || expect("keyword", "write")) {
+	else if (expect("keyword", "read") || expect("keyword", "write")) {
 		auto& cmd = lasttok().val;
 		require("identifier", "");
 		auto& id = lasttok();
@@ -134,6 +136,9 @@ static void parse_statement() {
 		if (cmd == "read" )  emit({ "STO", id.val });
 	}
 	// null - actually ok
+	else {
+		printf("parser warn: null statement\n");
+	}
 }
 
 static void parse_block() {

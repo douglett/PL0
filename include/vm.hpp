@@ -31,18 +31,21 @@ static void showstate() {
 	string s;
 	for (int i=0; i<(int)stack.size(); i++)
 		s += (i>0 ? "," : "") + to_string(stack[i]);
-	printf(":%-4d  %s  \n", PC, s.c_str());
-	// string s;  getline(cin, s);
+	printf(":%-4d  %s  ", PC, s.c_str());
+	// getline(cin, s);
+	printf("\n");
 }
 
 int run() {
 	try {
 	while (PC < (int)prog.size()) {
+		// debug values
 		// showstate();
+		// do operation
 		const auto& op = prog[PC];
 		if       (op.type == "INT"){  stack.resize( stack.size() + op.b, 0 ), PC++;  }
 		else if  (op.type == "JMP"){  PC = op.b;  }
-		// else if  (op.type == "JPC"){  if(stack.back() == 0) PC = op.b;  }
+		else if  (op.type == "JPC"){  stack.back() == 0 ? PC = op.b : PC++;  }
 		else if  (op.type == "LIT"){  stack.push_back(op.b), PC++;  }
 		else if  (op.type == "STO"){  stack[framepos(op.a) + op.b] = stack.back(); stack.pop_back(), PC++;  }
 		else if  (op.type == "LOD"){  stack.push_back( stack[framepos(op.a) + op.b] ), PC++;  }

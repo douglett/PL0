@@ -3,13 +3,13 @@ begin
 	read x;
 	read y;
 	if x=2 then
-		y:=2
+		y:=2;
 
 	write x;
 	write y;
 	
 	if y<3 then
-		y:=3
+		y:=3;
 
 	write x;
 	write y;
