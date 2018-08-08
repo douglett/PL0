@@ -126,7 +126,16 @@ static void parse_statement() {
 		prog[jmppos].b = prog.size();
 		// optional else
 		if (expect("keyword", "else")) {
-			throw string("else WIP!");
+			// throw string("else WIP!");
+			// insert jump-to-end for previous if statement
+			int jmppos2 = prog.size();
+			emit({ "JMP", "-1" });
+			// update initial jump
+			prog[jmppos].b = prog.size();
+			// body
+			parse_statement();
+			// fix jump command
+			prog[jmppos2].b = prog.size();
 		}
 	}
 	// while
