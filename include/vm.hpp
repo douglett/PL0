@@ -10,7 +10,11 @@ private:
 	vector<int> stack = { 0, 0, 0 };  // initial state
 	int PC = 0, base = 0;
 	// static int dynamic_link = 0, return_address = 0, static_link = 0;
+public:
+	istream* rin  = &cin;
+	ostream* rout = &cout;
 
+private:
 	int framepos(int level) {
 		int mbase = base;
 		while (level > 0)
@@ -81,8 +85,8 @@ public:
 				}
 				PC++;  }
 			else if  (op.type == "EXT"){  
-				if      (op.b == 1){  printf("> %d\n", stack.back()), stack.pop_back();  }
-				else if (op.b == 2){  int i; cout << ">> "; cin >> i; stack.push_back(i);  }
+				if      (op.b == 1){  *rout << "> " << stack.back() << endl; stack.pop_back();  }
+				else if (op.b == 2){  int i; *rout << ">> "; *rin >> i; stack.push_back(i);  }
 				else    throw string("unknown EXT id: "+to_string(op.b));
 				PC++;  }
 			else     throw string("unknown opcode: ["+op.type+"]");
