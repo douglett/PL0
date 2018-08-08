@@ -5,11 +5,17 @@ using namespace std;
 int main() {
 	printf("-- begin --\n");
 
-	if (pl0::load("../examples/test03.txt"))  return 1;
-	// pl0::tokshow();
-	if (pl0::parse())  return 1;
-	pl0::progshow();
-	if (pl0::run())  return 1;
+	// tokenize
+	pl0::Tokenizer tok;
+	if (tok.load("../examples/test03.txt"))  return 1;
+	// tok.tokshow();
+	// parse
+	pl0::Parser parser;  // parser and emitter
+	if (parser.parse(tok.toklist))  return 1;
+	parser.emitter.progshow();
+	// vm
+	pl0::VM vm;
+	if (vm.run(parser.emitter.prog))  return 1;
 
 	printf("-- end --\n");
 }
