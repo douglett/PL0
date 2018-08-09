@@ -6,7 +6,7 @@ using namespace std;
 
 // consts
 const vector<string> OPR_LIST = {
-	"NIL",  "+","-","*","/",  "=","!=","<",">","<=",">=" };
+	"NIL",  "+","-","*","/",  "=","!=","<",">","<=",">=",  "ODD" };
 
 // symbol table storage
 struct Symbol {
@@ -20,7 +20,7 @@ private:
 public:
 	vector<Symbol> prog; // program storage
 
-private:
+public:
 	//-- table management
 	const Symbol find_symbol(const string& id) {
 		for (int i = table.size()-1; i >= 0; i--)
@@ -35,7 +35,6 @@ private:
 		throw string("missing symbol: ["+id+"]");
 	}
 
-public:
 	//-- emitter
 	void emit(const vector<string>& args) {
 		// printf("%s\n", join(args).c_str());
@@ -54,11 +53,16 @@ public:
 			prog.push_back({ "INT", label, 0, (int)args.size()-1 });  }
 		else if (args[0] == "_procedure")  
 			table.back().push_back({ "procedure", args[1], (int)prog.size() });
+		else if (args[0] == "_getval"){
+			auto sym = find_symbol(args[1]);
+			if      (sym.type == "const")  emit({ "LIT", to_string(sym.a) });
+			else if (sym.type == "var"  )  emit({ "LOD", sym.name });
+			else    throw string("emit: _getval: unknown symbol ["+args[1]+"]");  }
 		else if (args[0] == "LIT")  
 			prog.push_back({ "LIT", args[1], 0, stoi(args[1]) });
 		else if (args[0] == "STO" || args[0] == "LOD"){ 
 			auto& sym = find_symbol(args[1]);
-			if (sym.type != "var")  throw string("emit: expected var");
+			if (sym.type != "var")  throw string("emit: expected var ["+args[1]+"]");
 			prog.push_back({ args[0], sym.name, find_symbol_level(args[1]), sym.a });  }
 		else if (args[0] == "CAL"){ 
 			auto& sym = find_symbol(args[1]);

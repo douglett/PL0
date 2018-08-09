@@ -24,16 +24,15 @@ int testfile(const string& fname) {
 int testall() {
 	static const vector<string> fnames = {
 		"test00.txt", "test01.txt", "test02-1.txt", "test02-2.txt",
-		"test03.txt" };
+		"test03.txt", "test04.txt" };
 	for (auto f : fnames)
 		if (testfile(f))  return 1;
 	return 0;
 }
 
 int main() {
-	// printf("-- begin --\n");
+	printf("-- begin --\n");
 	// if (testall())  return 1;
 	testfile("test04.txt");
-
-	// printf("-- end --\n");
+	printf("-- end --\n");
 }

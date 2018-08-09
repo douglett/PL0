@@ -9,11 +9,15 @@ procedure mult;
 			if odd x then z := z+a;
 			a := 2*a;
 			b := b/2;
-		end
+		end;
+		write a;
+		write b;
 	end;
 
 begin
 	x := m;
 	y := n;
+	write x;
+	write y;
 	call mult;
 end.

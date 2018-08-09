@@ -81,6 +81,7 @@ public:
 					case 8:    stack.back() = (stack.back() >  i); break;
 					case 9:    stack.back() = (stack.back() <= i); break;
 					case 10:   stack.back() = (stack.back() >= i); break;
+					case 11:   stack.push_back(i % 2); break;
 					default:  throw string("unknown OPR opcode: ["+to_string(op.b)+"]");
 				}
 				PC++;  }

@@ -45,7 +45,7 @@ private:
 	// void parse_expression();
 
 	void parse_factor() {
-		if      (expect("identifier", "")) { emit({ "LOD", lasttok().val }); }
+		if      (expect("identifier", "")) { emit({ "_getval", lasttok().val }); }
 		else if (expect("number", "")) { emit({ "LIT", lasttok().val }); }
 		else if (expect("operator", "(")) { parse_expression();  require("operator", ")"); }
 		else 	{ throw string("unexpected token in factor"); }
@@ -82,7 +82,7 @@ private:
 	void parse_condition() {
 		if (expect("keyword", "odd")) {
 			parse_expression();
-			emit({ "OPR", "odd" });
+			emit({ "OPR", "ODD" });
 			return;
 		}
 		// LHS
@@ -130,7 +130,7 @@ private:
 			// insert jump command
 			int jmppos = emitter.prog.size();
 			emit({ "JPC", "-1" });
-			// if body
+			// body
 			require("keyword", "then");
 			parse_statement();
 			// fix jump command
@@ -150,6 +150,20 @@ private:
 			}
 		}
 		// while
+		else if (expect("keyword", "while")) {
+			int jmppos_start = emitter.prog.size();
+			parse_condition();
+			// insert jump command
+			int jmppos_end = emitter.prog.size();
+			emit({ "JPC", "-1" });
+			// body
+			require("keyword", "do");
+			parse_statement();
+			// add loop jump
+			emit({ "JMP", to_string(jmppos_start) });
+			// fix conditional jump
+			emitter.prog[jmppos_end].b = emitter.prog.size();
+		}
 		// read / write
 		else if (expect("keyword", "read") || expect("keyword", "write")) {
 			auto& cmd = lasttok().val;
