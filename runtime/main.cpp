@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-int testfile(const string& fname) {
+int testfile(const string& fname, const string& input="") {
 	printf("-- testing [%s] --\n", fname.c_str());
 	// tokenize
 	pl0::Tokenizer tok;
@@ -14,8 +14,8 @@ int testfile(const string& fname) {
 	// parser.emitter.progshow();
 	// vm
 	pl0::VM vm;
-	stringstream ss("1 2 3 4");
-	vm.rin = &ss;
+	stringstream ss(input);
+	if (input != "")  vm.rin = &ss;
 	if (vm.run(parser.emitter.prog))  return 1;
 	// OK
 	return 0;
@@ -26,13 +26,13 @@ int testall() {
 		"test00.txt", "test01.txt", "test02-1.txt", "test02-2.txt",
 		"test03.txt", "test04.txt" };
 	for (auto f : fnames)
-		if (testfile(f))  return 1;
+		if (testfile(f, "1 2 3 4"))  return 1;
 	return 0;
 }
 
 int main() {
 	printf("-- begin --\n");
 	// if (testall())  return 1;
-	testfile("test04.txt");
+	testfile("test05.txt");
 	printf("-- end --\n");
 }
