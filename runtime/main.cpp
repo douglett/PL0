@@ -24,7 +24,7 @@ int testfile(const string& fname, const string& input="") {
 int testall() {
 	static const vector<string> fnames = {
 		"test00.txt", "test01.txt", "test02-1.txt", "test02-2.txt",
-		"test03.txt", "test04.txt" };
+		"test03.txt", "test04.txt", "test05.txt" };
 	for (auto f : fnames)
 		if (testfile(f, "1 2 3 4"))  return 1;
 	return 0;
@@ -33,6 +33,6 @@ int testall() {
 int main() {
 	printf("-- begin --\n");
 	// if (testall())  return 1;
-	testfile("test05.txt");
+	testfile("test06.txt");
 	printf("-- end --\n");
 }
