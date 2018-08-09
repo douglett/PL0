@@ -9,6 +9,7 @@ class Parser {
 private:
 	vector<Node> toklist;
 	int pos = 0;
+	int proc_stack_height = 0; // height of procedure stack (for nested procedures)
 public:
 	Emitter emitter;
 
@@ -213,11 +214,14 @@ private:
 		// procedure block list
 		while (expect("keyword", "procedure")) {
 			// printf("parsing procedure block...\n");
+			if (proc_stack_height > 0)  throw string("block offset: ["+to_string(proc_stack_height)+"]");
 			require("identifier", "");
 			auto& id = lasttok();
 			emit({ "_procedure", id.val });
 			require("operator", ";");
+			proc_stack_height++;
 			parse_block();
+			proc_stack_height--;
 			require("operator", ";");
 		}
 		// fix jump command
